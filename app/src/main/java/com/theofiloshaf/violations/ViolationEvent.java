@@ -1,5 +1,12 @@
 package com.theofiloshaf.violations;
 
+import android.os.Build;
+import android.support.annotation.RequiresApi;
+
+import org.jsoup.select.Elements;
+
+import java.util.regex.Pattern;
+
 public class ViolationEvent {
 
         private int no;
@@ -102,6 +109,61 @@ public class ViolationEvent {
                     "Παραβιάσεις Ε.Ε.Χ: " + naViol + "\n" +
                     "Εμπλοκές: " + dogfights + "\n" +
                     "Υπερπτήσεις: " + overflight + "\n\n" +
-                    "Περιοχή παραβίασης: " + location;
+                    "Περιοχή: " + location;
         }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    public static ViolationEvent getViolationEvent(Elements row) {
+        Pattern pattern = Pattern.compile("&nbsp;|-| |");
+        int no = 0;
+        if (!pattern.matcher(row.get(1).text()).matches())
+            no = Integer.parseInt(row.get(0).text());
+
+        String date = row.get(1).text();
+
+        int formation = 0;
+        if (!pattern.matcher(row.get(2).text()).matches())
+            formation = Integer.parseInt(row.get(2).text());
+
+        int jets = 0;
+        if (!pattern.matcher(row.get(3).text()).matches())
+            jets = Integer.parseInt(row.get(3).text());
+
+        int armed = 0;
+        if (!pattern.matcher(row.get(4).text()).matches())
+            armed = Integer.parseInt(row.get(4).text());
+
+        int cn235 = 0;
+        if (!pattern.matcher(row.get(6).text()).matches())
+            cn235 = Integer.parseInt(row.get(6).text());
+
+        int helis = 0;
+        if (!pattern.matcher(row.get(7).text()).matches())
+            helis = Integer.parseInt(row.get(7).text());
+
+        int totalPlanes = 0;
+        if (!pattern.matcher(row.get(8).text()).matches())
+            totalPlanes = Integer.parseInt(row.get(8).text());
+
+        int atrViol = 0;
+        if (!pattern.matcher(row.get(9).text()).matches())
+            atrViol = Integer.parseInt(row.get(9).text());
+
+        int naViol = 0;
+        if (!pattern.matcher(row.get(10).text()).matches())
+            naViol = Integer.parseInt(row.get(10).text());
+
+        int dogfights = 0;
+        if (!pattern.matcher(row.get(11).text()).matches())
+            dogfights = Integer.parseInt(row.get(11).text());
+
+        int overflight = 0;
+        if (!pattern.matcher(row.get(12).text()).matches())
+            overflight = Integer.parseInt(row.get(12).text());
+
+
+        String location = row.get(13).text();
+
+        return new ViolationEvent(no, date, formation, jets, armed, cn235, helis, totalPlanes, atrViol, naViol, dogfights, overflight, location);
+    }
 }

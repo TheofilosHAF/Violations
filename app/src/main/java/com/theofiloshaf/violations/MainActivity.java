@@ -1,51 +1,78 @@
 package com.theofiloshaf.violations;
 
+import android.annotation.SuppressLint;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.Service;
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Color;
+import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
+import android.os.IBinder;
 import android.os.StrictMode;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
+import android.provider.Settings;
+import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.TextView;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import android.support.design.widget.Snackbar;
 
+
 public class MainActivity extends AppCompatActivity {
+
+    SwipeRefreshLayout swipeRefreshLayout;
+
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+       /*
+       Intent notificationIntent = new Intent(this, MainActivity.class);
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent,PendingIntent.FLAG_UPDATE_CURRENT);
+        builder.setContentIntent(contentIntent);
+        */
 
+        swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
+        swipeRefreshLayout.setColorSchemeColors(Color.RED);
 
-        if (!internet_connection()){
+        violationCheck();
+        swipeRefreshLayout.setOnRefreshListener(() -> {
+            violationCheck();
+            swipeRefreshLayout.setRefreshing(false);
+        });
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private void violationCheck(){
+        if (!internetConnection()){
             //create a snackbar telling the user there is no internet connection and issuing a chance to reconnect
-            final Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content), "Δεν υπάρχει σύνδεση στο Internet", Snackbar.LENGTH_INDEFINITE);
-
-            snackbar.setAction("Δοκιμή ξανά", new View.OnClickListener(){
-                @Override
-                public void onClick(View v) {
-                    if (!internet_connection()){
-                        Snackbar.make(findViewById(android.R.id.content), "Δεν έχετε συνδεθεί στο Internet",Snackbar.LENGTH_INDEFINITE).show();
-                    }
-                }
-            }).show();
+            Snackbar.make(findViewById(android.R.id.content), "Δεν έχετε συνδεθεί στο Internet",Snackbar.LENGTH_LONG).show();
         }
-        else {
+        else{
             StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
             StrictMode.setThreadPolicy(policy);
 
@@ -55,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            Element table = site.select("table").get(1);
+            Element table = Objects.requireNonNull(site).select("table").get(1);
             Elements rows = table.select("tr");
             ArrayList<ViolationEvent> violations = new ArrayList<>();
 
@@ -66,93 +93,82 @@ public class MainActivity extends AppCompatActivity {
             for (int i = 2; i < rows.size(); i++) { //first 2 rows are the table title names.
                 Elements row = rows.get(i).select("td");
 
-                ViolationEvent violation = getViolationEvent(row);
+                ViolationEvent violation = ViolationEvent.getViolationEvent(row);
                 violations.add(violation);
 
             }
 
             String date = violations.get(0).getDate();
 
-            TextView status = (TextView) findViewById(R.id.newStatus);
+            TextView status = findViewById(R.id.newStatus);
+            TextView newViolationInfo = findViewById(R.id.newViolationInfo);
 
             boolean violated = false;
             if (date.equals(curDate)) {
                 status.setText("Σήμερα παρουσιάστηκε παραβίαση");
+                notificationCreate();
                 violated = true;
             } else
                 status.setText("Δεν παρουσιάστηκε παραβίαση σήμερα");
+            newViolationInfo.setText("Τελευταία παραβίαση: " + violations.get(0).getDate());
 
             if (violated) {
-                TextView newViolationInfo = (TextView) findViewById(R.id.newViolationInfo);
                 String all = violations.get(0).toString();
                 newViolationInfo.setText("Στοιχεία παραβίασης:\n\n" + all);
             }
         }
+
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    private static ViolationEvent getViolationEvent(Elements row) {
-        int no = 0;
-        if (!row.get(0).text().equals("-"))
-            no = Integer.parseInt(row.get(0).text());
-
-        String date = row.get(1).text();
-
-        int formation = 0;
-        if (!row.get(2).text().equals("-"))
-            formation = Integer.parseInt(row.get(2).text());
-
-        int jets = 0;
-        if (!row.get(3).text().equals("-"))
-            jets = Integer.parseInt(row.get(3).text());
-
-        int armed = 0;
-        if (!row.get(4).text().equals("-"))
-            armed = Integer.parseInt(row.get(4).text());
-
-        int cn235 = 0;
-        if (!row.get(6).text().equals("-"))
-            cn235 = Integer.parseInt(row.get(6).text());
-
-        int helis = 0;
-        if (!row.get(7).text().equals("-"))
-            helis = Integer.parseInt(row.get(7).text());
-
-        int totalPlanes = 0;
-        if (!row.get(8).text().equals("-"))
-            totalPlanes = Integer.parseInt(row.get(8).text());
-
-        int atrViol = 0;
-        if (!row.get(9).text().equals("-"))
-            atrViol = Integer.parseInt(row.get(9).text());
-
-        int naViol = 0;
-        if (!row.get(10).text().equals("-"))
-            naViol = Integer.parseInt(row.get(10).text());
-
-        int dogfights = 0;
-        if (!row.get(11).text().equals("-"))
-            dogfights = Integer.parseInt(row.get(11).text());
-
-        int overflight = 0;
-        if (!row.get(12).text().equals("-"))
-            overflight = Integer.parseInt(row.get(12).text());
-
-        String location = row.get(13).text();
-
-        return new ViolationEvent(no, date, formation, jets, armed, cn235, helis, totalPlanes, atrViol, naViol, dogfights, overflight, location);
-    }
-
-
-    boolean internet_connection(){
+    boolean internetConnection(){
         //method to check if the device is connected to the network
         ConnectivityManager cm = (ConnectivityManager)this.getSystemService(Context.CONNECTIVITY_SERVICE);
 
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        boolean isConnected = activeNetwork != null &&
+        return activeNetwork != null &&
                 activeNetwork.isConnectedOrConnecting();
-        return isConnected;
     }
 
+    private void notificationCreate(){
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        String NOTIFICATION_CHANNEL_ID = "my_channel_id_01";
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            @SuppressLint("WrongConstant") NotificationChannel notificationChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, "My Notifications", NotificationManager.IMPORTANCE_MAX);
+
+            // Configure the notification channel.
+            notificationChannel.setDescription("Channel description");
+            notificationChannel.enableLights(true);
+            notificationChannel.setLightColor(Color.RED);
+            notificationChannel.setVibrationPattern(new long[]{0, 1000, 500, 1000});
+            notificationChannel.enableVibration(true);
+            notificationManager.createNotificationChannel(notificationChannel);
+        }
+
+
+        NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
+        notificationBuilder.setAutoCancel(true)
+                .setDefaults(Notification.DEFAULT_ALL)
+                .setWhen(System.currentTimeMillis())
+                .setSmallIcon(R.mipmap.ic_launcher_round)
+                .setTicker("test")
+                //     .setPriority(Notification.PRIORITY_MAX)
+                .setContentTitle("Νέο συμβάν παραβίασης")
+                .setContentText("Περισσότερες λεπτομέρειες")
+                .setContentInfo("Info");
+
+        notificationManager.notify(/*notification id*/1, notificationBuilder.build());
+        vibrationGenerate();
+    }
+
+    private void vibrationGenerate(){
+        Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        // Vibrate for 500 milliseconds
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            v.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
+        } else {
+            //deprecated in API 26
+            v.vibrate(500);
+        }
+    }
 }
