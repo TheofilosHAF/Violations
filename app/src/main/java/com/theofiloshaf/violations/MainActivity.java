@@ -32,12 +32,20 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import android.support.design.widget.Snackbar;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import violations.utils.ViolationEvent;
+import violations.utils.Violations;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -59,6 +67,8 @@ public class MainActivity extends AppCompatActivity {
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
         swipeRefreshLayout.setColorSchemeColors(Color.RED);
 
+        //check();
+
         violationCheck();
         swipeRefreshLayout.setOnRefreshListener(() -> {
             violationCheck();
@@ -67,39 +77,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    private void violationCheck(){
+    private void violationCheck() {
+        String contents = null;
         if (!internetConnection()){
             //create a snackbar telling the user there is no internet connection and issuing a chance to reconnect
             Snackbar.make(findViewById(android.R.id.content), "Δεν έχετε συνδεθεί στο Internet",Snackbar.LENGTH_LONG).show();
-        }
-        else{
-            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-            StrictMode.setThreadPolicy(policy);
-
-            Document site = null;
-            try {
-                site = Jsoup.connect("http://www.geetha.mil.gr/el/violations-gr/2015-01-22-11-43-23.html").timeout(6000).get();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            Element table = Objects.requireNonNull(site).select("table").get(1);
-            Elements rows = table.select("tr");
-            ArrayList<ViolationEvent> violations = new ArrayList<>();
-
+        }else {
+            contents = HttpUtils.getContents("https://www.coffee-time.eu/violationsAPI.php");
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            Violations violations = gson.fromJson(contents, Violations.class);
 
             String curDate = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(new Date());
-
-
-            for (int i = 2; i < rows.size(); i++) { //first 2 rows are the table title names.
-                Elements row = rows.get(i).select("td");
-
-                ViolationEvent violation = ViolationEvent.getViolationEvent(row);
-                violations.add(violation);
-
-            }
-
-            String date = violations.get(0).getDate();
-
+            String date = violations.getViolationEvents().get(0).getDate();
             TextView status = findViewById(R.id.newStatus);
             TextView newViolationInfo = findViewById(R.id.newViolationInfo);
 
@@ -110,15 +99,26 @@ public class MainActivity extends AppCompatActivity {
                 violated = true;
             } else
                 status.setText("Δεν παρουσιάστηκε παραβίαση σήμερα");
-            newViolationInfo.setText("Τελευταία παραβίαση: " + violations.get(0).getDate());
+            newViolationInfo.setText("Τελευταία παραβίαση: " + violations.getViolationEvents().get(0).getDate());
 
             if (violated) {
-                String all = violations.get(0).toString();
+                String all = violations.getViolationEvents().get(0).toString();
                 newViolationInfo.setText("Στοιχεία παραβίασης:\n\n" + all);
             }
         }
-
     }
+
+    private List getViolationsList(String contents) {
+        ObjectMapper mapper = new ObjectMapper();
+        List list = null;
+        try {
+            list = mapper.readValue(contents, List.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
 
     boolean internetConnection(){
         //method to check if the device is connected to the network
