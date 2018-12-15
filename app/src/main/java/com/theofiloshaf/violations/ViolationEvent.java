@@ -1,118 +1,123 @@
 package com.theofiloshaf.violations;
 
-import android.os.Build;
-import android.support.annotation.RequiresApi;
+import com.theofiloshaf.violations.Violations;
 
+
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 public class ViolationEvent {
 
-        private int no;
-        private String date;
-        private int formation;
-        private int jets;
-        private int armed;
-        private int cn235;
-        private int helis;
-        private int totalPlanes;
-        private int atrViol;
-        private int naViol;
-        private int dogfights;
-        private int overflight;
-        private String location;
+    private int no;
+    private String date;
+    private int formation;
+    private int jets;
+    private int armed;
+    private int cn235;
+    private int helis;
+    private int totalPlanes;
+    private int atrViol;
+    private int naViol;
+    private int dogfights;
+    private int overflight;
+    private String location;
 
 
-        public ViolationEvent(int no, String date, int formation, int jets, int armed, int cn235, int helis, int totalPlanes, int atrViol, int naViol, int dogfights, int overflight, String location) {
-            this.no = no;
-            this.date = date;
-            this.formation = formation;
-            this.jets = jets;
-            this.armed = armed;
-            this.cn235 = cn235;
+    private ViolationEvent(int no, String date, int formation, int jets, int armed, int cn235, int helis, int totalPlanes, int atrViol, int naViol, int dogfights, int overflight, String location) {
+        this.no = no;
+        this.date = date;
+        this.formation = formation;
+        this.jets = jets;
+        this.armed = armed;
+        this.cn235 = cn235;
 
-            this.helis = helis;
-            this.totalPlanes = totalPlanes;
-            this.atrViol = atrViol;
-            this.naViol = naViol;
+        this.helis = helis;
+        this.totalPlanes = totalPlanes;
+        this.atrViol = atrViol;
+        this.naViol = naViol;
 
-            this.dogfights = dogfights;
-            this.overflight = overflight;
-            this.location = location;
-        }
+        this.dogfights = dogfights;
+        this.overflight = overflight;
+        this.location = location;
+    }
 
-        public String getLocation() {
-            return location;
-        }
+    public String getLocation() {
+        return location;
+    }
 
-        public int getDogfights() {
-            return dogfights;
-        }
+    public int getDogfights() {
+        return dogfights;
+    }
 
-        public String getDate() {
-            return date;
-        }
+    public String getDate() {
+        return date;
+    }
 
-        public int getNo() {
-            return no;
-        }
+    public int getNo() {
+        return no;
+    }
 
-        public int getFormation() {
-            return formation;
-        }
+    public int getFormation() {
+        return formation;
+    }
 
-        public int getJets() {
-            return jets;
-        }
+    public int getJets() {
+        return jets;
+    }
 
-        public int getArmed() {
-            return armed;
-        }
+    public int getArmed() {
+        return armed;
+    }
 
-        public int getCn235() {
-            return cn235;
-        }
+    public int getCn235() {
+        return cn235;
+    }
 
-        public int getHelis() {
-            return helis;
-        }
+    public int getHelis() {
+        return helis;
+    }
 
-        public int getTotalPlanes() {
-            return totalPlanes;
-        }
+    public int getTotalPlanes() {
+        return totalPlanes;
+    }
 
-        public int getAtrViol() {
-            return atrViol;
-        }
+    public int getAtrViol() {
+        return atrViol;
+    }
 
-        public int getNaViol() {
-            return naViol;
-        }
+    public int getNaViol() {
+        return naViol;
+    }
 
-        public int getOverflight() {
-            return overflight;
-        }
+    public int getOverflight() {
+        return overflight;
+    }
 
-        @Override
-        public String toString() {
-            return
-                    no +"η παραβίαση αυτό το μήνα\n\n" +
-                    "Ημ/νια: "  + date + "\n" +
-                    "Σχηματισμοί: " + formation + "\n" +
-                    "Μαχητικά: " + jets + "\n" +
-                    "Οπλισμένα: " + armed + "\n" +
-                    "Α/φη CN-235: " + cn235 + "\n" +
-                    "Ελικόπτερα: " + helis + "\n\n" +
-                    "Σύνολο α/φων: " + totalPlanes + "\n\n" +
-                    "Παραβιάσεις Κ.Ε.Κ: " + atrViol + "\n" +
-                    "Παραβιάσεις Ε.Ε.Χ: " + naViol + "\n" +
-                    "Εμπλοκές: " + dogfights + "\n" +
-                    "Υπερπτήσεις: " + overflight + "\n\n" +
-                    "Περιοχή: " + location;
-        }
+    @Override
+    public String toString() {
+        return
+                no +"η παραβίαση αυτό το μήνα\n\n" +
+                        "Ημ/νια: "  + date + "\n" +
+                        "Σχηματισμοί: " + formation + "\n" +
+                        "Μαχητικά: " + jets + "\n" +
+                        "Οπλισμένα: " + armed + "\n" +
+                        "Α/φη CN-235: " + cn235 + "\n" +
+                        "Ελικόπτερα: " + helis + "\n\n" +
+                        "Σύνολο α/φων: " + totalPlanes + "\n\n" +
+                        "Παραβιάσεις Κ.Ε.Κ: " + atrViol + "\n" +
+                        "Παραβιάσεις Ε.Ε.Χ: " + naViol + "\n" +
+                        "Εμπλοκές: " + dogfights + "\n" +
+                        "Υπερπτήσεις: " + overflight + "\n\n" +
+                        "Περιοχή: " + location;
+    }
 
-    @RequiresApi(api = Build.VERSION_CODES.O)
     public static ViolationEvent getViolationEvent(Elements row) {
         Pattern pattern = Pattern.compile("&nbsp;|-| |");
         int no = 0;
@@ -165,5 +170,53 @@ public class ViolationEvent {
         String location = row.get(13).text();
 
         return new ViolationEvent(no, date, formation, jets, armed, cn235, helis, totalPlanes, atrViol, naViol, dogfights, overflight, location);
+    }
+
+    public static ArrayList<ViolationEvent> getViolationsList() {
+        Document site = null;
+        try {
+            site = Jsoup.connect("http://www.geetha.mil.gr/el/violations-gr/2015-01-22-11-43-23.html").timeout(6000).get();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Element table = Objects.requireNonNull(site).select("table").get(1);
+        Elements rows = table.select("tr");
+        ArrayList<ViolationEvent> violations = new ArrayList<>();
+        for (int i = 2; i < rows.size(); i++) { //first 2 rows are the table title names.
+            Elements row = rows.get(i).select("td");
+
+            ViolationEvent violation = ViolationEvent.getViolationEvent(row);
+            violations.add(violation);
+
+        }
+        return violations;
+    }
+    public static Violations getViolations() {
+        return new Violations(getViolationsList());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ViolationEvent)) return false;
+        ViolationEvent that = (ViolationEvent) o;
+        return no == that.no &&
+                formation == that.formation &&
+                jets == that.jets &&
+                armed == that.armed &&
+                cn235 == that.cn235 &&
+                helis == that.helis &&
+                totalPlanes == that.totalPlanes &&
+                atrViol == that.atrViol &&
+                naViol == that.naViol &&
+                dogfights == that.dogfights &&
+                overflight == that.overflight &&
+                date.equals(that.date) &&
+                location.equals(that.location);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(no, date, formation, jets, armed, cn235, helis, totalPlanes, atrViol, naViol, dogfights, overflight, location);
     }
 }
