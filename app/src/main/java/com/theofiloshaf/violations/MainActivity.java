@@ -5,6 +5,7 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -17,6 +18,8 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,6 +35,7 @@ import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
+    private Button oldViolButton;
     SwipeRefreshLayout swipeRefreshLayout;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -39,6 +43,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        oldViolButton = (Button) findViewById(R.id.oldViolButton);
+        oldViolButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openOldViolations();
+            }
+        });
 
        /*
        Intent notificationIntent = new Intent(this, MainActivity.class);
@@ -47,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
         */
 
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
-        swipeRefreshLayout.setColorSchemeColors(Color.RED);
+        swipeRefreshLayout.setColorSchemeColors(Color.BLACK);
 
         //check();
 
@@ -58,6 +69,12 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    public void openOldViolations() {
+        Intent intent = new Intent(this,OldViolations.class);
+        startActivity(intent);
+    }
+
+    @SuppressLint("SetTextI18n")
     @RequiresApi(api = Build.VERSION_CODES.O)
     private void violationCheck() {
         String contents = null;

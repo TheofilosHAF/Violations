@@ -10,7 +10,9 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:background="@drawable/background">
+
 
         <TextView
             android:id="@+id/newStatus"
@@ -18,22 +20,31 @@
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true"
-            android:layout_marginTop="42dp"
-            android:text="status" />
+            android:layout_marginTop="120dp"
+            android:text="status"
+            android:textColor="#ffffff" />
 
 
         <TextView
             android:id="@+id/newViolationInfo"
+            android:textColor="#ffffff"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:layout_centerVertical="true"
             android:text="info" />
 
-
-
-
-
+        <Button
+            android:id="@+id/oldViolButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="167dp"
+            android:background="@android:color/black"
+            android:text="Παλιότερες\n παραβιάσεις"
+            android:textSize="12sp"
+            android:textColor="#ffffff" />
     </RelativeLayout>
 
 
